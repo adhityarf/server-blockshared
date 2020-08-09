@@ -1,0 +1,59 @@
+<!-- DataTales Example -->
+<div class="card shadow mb-4 mt-2">
+  <div class="card-header py-3">
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add-modal">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4">
+        <img src="http://localhost:5000/<%= transaction.payments.proofPayment %>" alt="image"
+          style="width: 100%; display: block;">
+      </div>
+      <div class="col-md-8">
+        <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Nama Customer</th>
+                <th>Total</th>
+                <th>Code</th>
+                <th>Bank From</th>
+                <th>B-Poin</th>
+                <th>Accepted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= transaction.custId.fullName %></td>
+                <td>Rp. <%= transaction.nominal %></td>
+                <td>Rp. <%= transaction.code %></td>
+                <td><%= transaction.payments.bankFrom %></td>
+                <td><%= transaction.bp %></td>
+                <td>
+                  <% if(transaction.payments.status == 'Process') { %>
+                  <form action="/admin/pembayaran/<%= transaction.id %>/confirmation?_method=PUT" method="POST">
+                    <div class="form-check" style="text-align: center;">
+                      <input style="width: 20px; height: 20px;" class="form-check-input position-static" type="checkbox"
+                        aria-label="..." onChange="this.form.submit()">
+                    </div>
+                  </form>
+                  <% } else if(transaction.payments.status == 'Accept') { %>
+                  <div class="form-check" style="text-align: center;">
+                    <input style="width: 20px; height: 20px;" class="form-check-input position-static" type="checkbox"
+                      aria-label="..." checked disabled>
+                  </div>
+                  <% } else { %>
+                  <p>You don't have permission</p>
+                  <% } %>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
