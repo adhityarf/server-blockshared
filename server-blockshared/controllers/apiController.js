@@ -1,9 +1,17 @@
+require("dotenv").config()
+
 const bcrypt = require("bcryptjs")
 const path = require('path')
+
+const jwt = require('jsonwebtoken')
+
 
 const Asset = require('../models/Assets')
 const Transaction = require('../models/Transaction')
 const Cust = require('../models/Custs')
+const Token = require("../models/Token")
+const { token } = require("morgan")
+const { deleteOne } = require("../models/Assets")
 
 module.exports = {
   // NEW BLOCKSHARED
@@ -43,25 +51,49 @@ module.exports = {
           status: false
         })
       }
-      req.session.custSess = {
-        id: cust.id,
-        custemail: cust.email
+      const custObj = {
+        custId: cust.id,
+        custEmail: cust.email
       }
+      const accessToken = jwt.sign(custObj, process.env.REACT_APP_ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+      const refreshToken = jwt.sign(custObj, process.env.REACT_APP_REFRESH_TOKEN_SECRET)
+
+      // INSERT REFRESH TOKEN TO DB
+      const token = await Token.create({
+        custId: cust.id,
+        custEmail: cust.email,
+        refreshToken: refreshToken
+      });
+
       res.status(200).json({
         message: "Login Success",
-        status: true
+        status: true,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        token
       })
     } catch (error) {
       res.status(404).json({
-        message: "Login Unsuccessful" + error,
+        message: "Login Unsuccessful",
         status: false
       })
     }
   },
-  signoutCust: (req, res) => {
+  signoutCust: async (req, res) => {
     req.session.destroy();
-    res.status(200).json({
-      message: "Session Destroyed",
+
+
+    id = req.user.custId
+    const deleteRefreshToken = await Token.deleteOne({ custId: id })
+
+    if (!deleteRefreshToken) {
+      return res.status(201).json({
+        message: "Failed to delete refresh token"
+      })
+    }
+
+    res.status(204).json({
+      message: "Logout Success",
       status: true
     })
   },
@@ -150,11 +182,13 @@ module.exports = {
   // VIEW CUST BLOCKSHARED
   dashboardPage: async (req, res) => {
     try {
-      const id = req.session.custSess.id
+      const id = req.user.custId
+      console.log(req.user)
       const asset = await Asset.findOne({ owner: id })
         .populate({ path: 'owner' })
       res.status(200).json({
-        asset
+        asset,
+        id: req.user.id
       })
     } catch (error) {
       res.status(404).json({ message: "Couldn't find any data !" } + error)
@@ -166,10 +200,44 @@ module.exports = {
       const asset = await Asset.findOne({ owner: id })
         .populate({ path: 'owner' })
       res.status(200).json({
-        asset
+        asset,
+        id: req.user.id
       })
     } catch (error) {
       res.status(404).json({ message: "Couldn't find any data !" } + error)
     }
   },
+
+  // JWT TOKEN
+  refreshToken: async (req, res) => {
+    const refreshTokenBody = req.body.token
+    const email = req.body.email
+    const tokendb = await Token.findOne({ refreshToken: refreshTokenBody })
+
+    console.log(tokendb)
+
+    if (tokendb === null) return res.sendStatus(403)
+    if (refreshTokenBody === null) return res.sendStatus(401)
+    if (email != tokendb.custEmail) return res.sendStatus(403)
+
+    const custObj = {
+      custId: tokendb.custId,
+      custEmail: tokendb.custemail
+    }
+
+
+    jwt.verify(refreshTokenBody, process.env.REACT_APP_REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) return res.status(403).json({ err })
+
+      const accessToken = jwt.sign(custObj, process.env.REACT_APP_ACCESS_TOKEN_SECRET, { expiresIn: '30s' });
+
+      res.status(200).json({
+        message: "Refresh token success",
+        status: true,
+        accessToken: accessToken,
+        tokendb,
+        custObj
+      })
+    })
+  }
 }
