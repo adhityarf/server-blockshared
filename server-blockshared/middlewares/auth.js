@@ -2,7 +2,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 const auth = async (req, res, next) => {
-  const token = req.header("authorization");
+  const token = req.header("X-Access-Token");
   if (!token) {
     return res.status(401).json({
       code: "BAD_REQUEST_ERROR",

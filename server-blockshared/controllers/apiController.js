@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const path = require("path");
 
 const jwt = require("jsonwebtoken");
+const midtransClient = require('midtrans-client');
 
 const Asset = require("../models/Assets");
 const Transaction = require("../models/Transaction");
@@ -57,7 +58,7 @@ module.exports = {
       const accessToken = jwt.sign(
         custObj,
         process.env.REACT_APP_ACCESS_TOKEN_SECRET,
-        { expiresIn: "10s" }
+        { expiresIn: "5m" }
       );
       const refreshToken = jwt.sign(
         custObj,
@@ -186,7 +187,7 @@ module.exports = {
     try {
       const id = req.user.custId;
       console.log(req.user);
-      const asset = await Asset.findOne({ owner: id }).populate({
+      const asset = await Asset.find({ owner: id }).populate({
         path: "owner",
       });
       res.status(200).json({
@@ -198,11 +199,11 @@ module.exports = {
     }
   },
   credentialPage: async (req, res) => {
+    const { cred_id } = req.params;
+    console.log(cred_id)
     try {
-      const id = req.session.custSess.id;
-      const asset = await Asset.findOne({ owner: id }).populate({
-        path: "owner",
-      });
+      //const cust_id = req.session.custSess.id;
+      const asset = await Asset.findOne({ _id: cred_id })
       res.status(200).json({
         asset,
         id: req.user.id,
@@ -252,4 +253,37 @@ module.exports = {
       }
     );
   },
+
+  // MIDTRANS
+  midtransTopup: async (req, res) => {
+    try {
+      const { transaction_details } = req.body
+      // Create Snap API instance
+      const snap = new midtransClient.Snap({
+        // Set to true if you want Production Environment (accept real transaction).
+        isProduction: false,
+        serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej'
+      });
+
+      let parameter = {
+        "transaction_details": {
+          "order_id": transaction_details.order_id,
+          "gross_amount": transaction_details.gross_amount
+        },
+      };
+
+      snap.createTransaction(parameter)
+        .then((transaction) => {
+          // transaction token
+          let transactionToken = transaction.token;
+          console.log('transactionToken:', transactionToken);
+          res.status(200).json({
+            transactionToken
+          });
+        })
+    }
+    catch (error) {
+      res.status(404).json({ message: "Couldn't find any data !" } + error);
+    }
+  }
 };

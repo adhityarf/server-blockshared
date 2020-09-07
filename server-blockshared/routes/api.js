@@ -14,9 +14,12 @@ router.post("/uploadAsset", upload, apiController.uploadAssets);
 router.post("/topUp", upload, apiController.topUp);
 
 router.get("/dashboard", auth, apiController.dashboardPage);
-router.get("/credential", auth, apiController.credentialPage);
+router.get("/credential/:cred_id", auth, apiController.credentialPage);
 
 // JWT TOKEN
 router.post("/token", apiController.refreshToken);
+
+// MIDTRANS
+router.post("/topupMid", apiController.midtransTopup)
 
 module.exports = router;
