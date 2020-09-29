@@ -5,6 +5,7 @@ const fs = require("fs-extra")
 const path = require("path")
 const bcrypt = require("bcryptjs")
 const Assets = require("../models/Assets")
+const Custs = require("../models/Custs")
 
 module.exports = {
   viewSignin: async (req, res) => {
@@ -15,7 +16,7 @@ module.exports = {
       if (req.session.user == null || req.session.user == undefined) {
         res.render("index", {
           alert,
-          title: "Ayodanai | Login"
+          title: "Blockshared | Login"
         });
       } else {
         res.redirect('/admin/dashboard')
@@ -62,7 +63,7 @@ module.exports = {
       const transaction = await Transaction.find();
       const asset = await Assets.find()
       res.render("admin/dashboard/view_dashboard", {
-        title: "Ayodanai | Dashboard",
+        title: "Blockshared | Dashboard",
         user: req.session.user,
         cust,
         transaction,
@@ -97,7 +98,7 @@ module.exports = {
           .populate('bankId')
 
         res.render("admin/pembayaran/view_pembayaran", {
-          title: "Ayodanai | Pembayaran",
+          title: "Blockshared | Pembayaran",
           user: req.session.user,
           transaction,
           alert
@@ -117,7 +118,7 @@ module.exports = {
       const transaction = await Transaction.findOne({ _id: id })
         .populate('custId')
       res.render("admin/pembayaran/show_detail_pembayaran", {
-        title: "Ayodanai | Detail Pembayaran",
+        title: "Blockshared | Detail Pembayaran",
         user: req.session.user,
         transaction,
         alert
@@ -168,7 +169,7 @@ module.exports = {
       const userList = await Users.find()
 
       res.render("admin/userList/view_userList", {
-        title: "Ayodanai | User List",
+        title: "Blockshared | User List",
         user: req.session.user,
         userList,
         alert
@@ -222,6 +223,45 @@ module.exports = {
       req.flash('alertMessage', `${error.message}`);
       req.flash('alertStatus', 'danger')
       res.redirect('/admin/user');
+    }
+  },
+
+  // BLOCKCHAIN
+  viewBlock: async (req, res) => {
+    try {
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = { message: alertMessage, status: alertStatus }
+
+      const blockList = await Assets.find().sort({ createdAt: -1 }).populate({ path: 'owner', select: 'email' })
+
+      res.render("admin/blockView/view_blockList", {
+        title: "Blockshared | Block List",
+        user: req.session.user,
+        blockList,
+        alert
+      });
+    } catch (error) {
+      res.redirect("/admin/dashboard")
+    }
+  },
+  showDetailBlock: async (req, res) => {
+    const { id } = req.params
+    try {
+      const alertMessage = req.flash('alertMessage');
+      const alertStatus = req.flash('alertStatus');
+      const alert = { message: alertMessage, status: alertStatus }
+
+      const asset = await Assets.findOne({ _id: id })
+        .populate('custId')
+      res.render("admin/blockView/show_detail_block", {
+        title: "Blockshared | Detail Block",
+        user: req.session.user,
+        asset,
+        alert
+      });
+    } catch (error) {
+      res.redirect("/admin/blocklist")
     }
   },
 };

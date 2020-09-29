@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const adminController = require("../controllers/adminController");
-const auth = require('../middlewares/auth');
+const auth = require('../middlewares/authAdmin');
 const localSession = require('../middlewares/localSession');
 
 // ADMIN FUNCTION
@@ -24,5 +24,9 @@ router.get("/user", adminController.viewUser);
 router.post("/user", adminController.addUser);
 router.put("/user", adminController.editUser);
 router.delete("/user/:id", adminController.deleteUser);
+
+// END-POINT BLOCKCHAIN
+router.get("/blocklist", adminController.viewBlock);
+router.get("/blocklist/:id", adminController.showDetailBlock);
 
 module.exports = router;

@@ -187,7 +187,7 @@ module.exports = {
     try {
       const id = req.user.custId;
       console.log(req.user);
-      const asset = await Asset.find({ owner: id }).populate({
+      const asset = await Asset.find({ owner: id }).sort({ createdAt: -1 }).populate({
         path: "owner",
       });
       res.status(200).json({
