@@ -323,6 +323,7 @@ module.exports = {
           } else if (transactionStatus == 'settlement') {
             // TODO set transaction status on your database to 'success'
             // and response with 200 OK
+            res.status(200).json({ message: "SUCCESS" });
           } else if (transactionStatus == 'cancel' ||
             transactionStatus == 'deny' ||
             transactionStatus == 'expire') {
