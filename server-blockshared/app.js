@@ -10,7 +10,8 @@ const flash = require('connect-flash')
 // import mongoose
 const mongoose = require("mongoose");
 mongoose.connect(
-  "mongodb+srv://blockshared:blockshared@blockshared.oonpe.mongodb.net/v1",
+  // "mongodb+srv://blockshared:blockshared@blockshared.oonpe.mongodb.net/v1", NODE.js v.3.6 or later
+  "mongodb://blockshared:blockshared@blockshared-shard-00-00.oonpe.mongodb.net:27017,blockshared-shard-00-01.oonpe.mongodb.net:27017,blockshared-shard-00-02.oonpe.mongodb.net:27017/v1?ssl=true&replicaSet=atlas-bjtq24-shard-0&authSource=admin&retryWrites=true&w=majority",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
