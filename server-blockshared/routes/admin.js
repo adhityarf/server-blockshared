@@ -3,6 +3,9 @@ const adminController = require("../controllers/adminController");
 const auth = require('../middlewares/authAdmin');
 const localSession = require('../middlewares/localSession');
 
+// MIDTRANS NOTIFICATIOn
+router.get("/notification", adminController.midtransStatus)
+
 // ADMIN FUNCTION
 router.get("/signin", adminController.viewSignin);
 router.post("/signin", adminController.actionSignin);

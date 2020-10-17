@@ -291,52 +291,5 @@ module.exports = {
     catch (error) {
       res.status(404).json({ message: "Couldn't find any data !" } + error);
     }
-  },
-  midtransStatus: async (req, res) => {
-    try {
-      // Create Snap API instance
-      const snap = new midtransClient.Snap({
-        // Set to true if you want Production Environment (accept real transaction).
-        isProduction: false,
-        serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
-        clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
-      });
-
-      snap.transaction.notification(notificationJson)
-        .then((statusResponse) => {
-          let orderId = statusResponse.order_id;
-          let transactionStatus = statusResponse.transaction_status;
-          let fraudStatus = statusResponse.fraud_status;
-
-          console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
-
-          // Sample transactionStatus handling logic
-
-          if (transactionStatus == 'capture') {
-            if (fraudStatus == 'challenge') {
-              // TODO set transaction status on your database to 'challenge'
-              // and response with 200 OK
-            } else if (fraudStatus == 'accept') {
-              // TODO set transaction status on your database to 'success'
-              // and response with 200 OK
-            }
-          } else if (transactionStatus == 'settlement') {
-            // TODO set transaction status on your database to 'success'
-            // and response with 200 OK
-            res.status(200).json({ message: "SUCCESS" });
-          } else if (transactionStatus == 'cancel' ||
-            transactionStatus == 'deny' ||
-            transactionStatus == 'expire') {
-            // TODO set transaction status on your database to 'failure'
-            // and response with 200 OK
-          } else if (transactionStatus == 'pending') {
-            // TODO set transaction status on your database to 'pending' / waiting payment
-            // and response with 200 OK
-          }
-        });
-    }
-    catch (error) {
-      res.status(404).json({ message: "Couldn't find any data !" } + error);
-    }
   }
 };

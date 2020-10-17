@@ -21,6 +21,5 @@ router.post("/token", apiController.refreshToken);
 
 // MIDTRANS
 router.post("/topupMid", apiController.midtransTopup)
-router.get("/notification", apiController.midtransStatus)
 
 module.exports = router;
