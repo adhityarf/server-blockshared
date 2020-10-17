@@ -4,6 +4,10 @@ const Cust = require("../models/Custs")
 const fs = require("fs-extra")
 const path = require("path")
 const bcrypt = require("bcryptjs")
+
+const midtransClient = require('midtrans-client');
+
+
 const Assets = require("../models/Assets")
 const Custs = require("../models/Custs")
 
