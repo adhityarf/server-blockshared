@@ -8,6 +8,7 @@ const midtransClient = require('midtrans-client');
 
 const Asset = require("../models/Assets");
 const Transaction = require("../models/Transaction");
+const MidtransData = require("../models/MidtransData");
 const Cust = require("../models/Custs");
 const Token = require("../models/Token");
 const { token } = require("morgan");
@@ -190,9 +191,12 @@ module.exports = {
       const asset = await Asset.find({ owner: id }).sort({ createdAt: -1 }).populate({
         path: "owner",
       });
+      const cust = await Cust.findOne({ _id: id }).select({ "poinBal": 1, "_id": 0 })
+      console.log(cust)
       res.status(200).json({
         asset,
         id: req.user.id,
+        cust
       });
     } catch (error) {
       res.status(404).json({ message: "Couldn't find any data !" } + error);
@@ -277,12 +281,21 @@ module.exports = {
         }
       };
 
+      const midtransData = {
+        order_id: transaction_details.order_id
+      };
+
+
       snap.createTransaction(parameter)
         .then((transaction) => {
+          async function savetoDB() {
+            const topUp = await MidtransData.create(midtransData);
+          }
           // transaction token
           let transactionToken = transaction.token;
           console.log('transactionToken:', transactionToken);
           console.log(parameter)
+          savetoDB()
           res.status(200).json({
             transactionToken
           });
@@ -291,5 +304,58 @@ module.exports = {
     catch (error) {
       res.status(404).json({ message: "Couldn't find any data !" } + error);
     }
+  },
+  midtransStatus: async (req, res) => {
+    try {
+      const { order_id } = req.query
+      const id = req.user.custId;
+      console.log(req.user);
+      console.log(order_id)
+      let apiClient = new midtransClient.Snap({
+        isProduction: false,
+        serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
+        clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
+      });
+
+      apiClient.transaction.status(order_id)
+        .then((response) => {
+          async function updateBall() {
+            const addbal = parseInt(response.gross_amount) / 1000
+            console.log(id)
+            const updateBalance = await Cust.findOne({ _id: id })
+            updateBalance.poinBal = updateBalance.poinBal + addbal
+            await updateBalance.save()
+          }
+          async function cekDB() {
+            const transactionDB = await MidtransData.findOne({ order_id: order_id })
+            //console.log(transactionDB.transaction_status)
+            if (response.transaction_status == "settlement" && transactionDB.transaction_status == "null") {
+              transactionDB.transaction_status = response.transaction_status
+              transactionDB.save()
+              console.log("settle")
+              console.log(response)
+              updateBall()
+              res.status(200).json({
+                response,
+                id: req.user.id
+              });
+            } else if (response.transaction_status == "settlement" && transactionDB.transaction_status != "null") {
+              transactionDB.transaction_status = response.transaction_status
+              transactionDB.save()
+              console.log("BUKAN SETTLE")
+              console.log(response)
+              //updateBall()
+              res.status(200).json({
+                response,
+                id: req.user.id
+              });
+            }
+          }
+          cekDB()
+        });
+    } catch (error) {
+      res.status(404).json({ message: "Couldn't find any data !" } + error);
+    }
+
   }
 };
