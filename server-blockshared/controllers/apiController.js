@@ -369,7 +369,7 @@ module.exports = {
           async function cekDB() {
             const transactionDB = await MidtransData.findOne({ order_id: order_id })
             //console.log(transactionDB.transaction_status)
-            if (transactionDB.transaction_status == "settlement" && transactionDB.add_bal == "null") {
+            if (response.transaction_status == "settlement" && transactionDB.add_bal == "null") {
               transactionDB.transaction_status = response.transaction_status
               transactionDB.add_bal = "Done"
               transactionDB.save()
