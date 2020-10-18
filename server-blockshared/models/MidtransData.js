@@ -18,6 +18,10 @@ const midtransDataSchema = new mongoose.Schema({
     type: String,
     default: "null"
   },
+  add_bal: {
+    type: String,
+    default: "null"
+  },
   settlement_time: {
     type: String,
     default: "null"
