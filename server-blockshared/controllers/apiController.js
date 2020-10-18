@@ -59,7 +59,7 @@ module.exports = {
       const accessToken = jwt.sign(
         custObj,
         process.env.REACT_APP_ACCESS_TOKEN_SECRET,
-        { expiresIn: "5m" }
+        { expiresIn: "15m" }
       );
       const refreshToken = jwt.sign(
         custObj,
@@ -113,29 +113,60 @@ module.exports = {
           message: "Image Not Found" + error,
         });
       }
+      // DECLARE VARIABLE
       const extName = path.extname(`${req.file.filename}`);
-      const newAsset = {
-        oriFile: {
-          fileName: `${req.file.filename}`,
-          fileSize: `${req.file.size}`,
-          fileUrl: `images/${req.file.filename}`,
-          fileType: extName,
-        },
-        blockFile: {
-          dataHash: "dataHash",
-          signee: cust.fullName,
-          signeeAddress: "signeeAddress",
-        },
-        owner: cust._id,
-      };
-      const asset = await Asset.create(newAsset);
-      cust.assetsId.push({ _id: asset._id });
-      await cust.save();
-      res.status(200).json({
-        asset,
-        message: "Upload Asset Success",
-        status: true,
-      });
+      // DEFINE PRICE
+      var price = 0
+
+      async function upload() {
+        if (cust.poinBal < price) {
+          return res.status(403).json({
+            message: "Saldo Insufficient",
+          });
+        } else {
+          const newAsset = {
+            oriFile: {
+              fileName: `${req.file.filename}`,
+              fileSize: `${req.file.size}`,
+              fileUrl: `images/${req.file.filename}`,
+              fileType: extName,
+            },
+            blockFile: {
+              dataHash: "dataHash",
+              signee: cust.fullName,
+              signeeAddress: "signeeAddress",
+            },
+            owner: cust._id,
+          };
+          // SUBTRACTION SALDO & ADD ASSET 
+          cust.poinBal = cust.poinBal - price
+          const asset = await Asset.create(newAsset);
+          cust.assetsId.push({ _id: asset._id });
+          await cust.save();
+          res.status(200).json({
+            asset,
+            message: "Upload Asset Success",
+            status: true,
+          });
+        }
+      }
+
+      function detPrice() {
+        if (extName == ".jpeg") {
+          console.log("MASUK")
+          price = 10
+        }
+        return price
+      }
+      detPrice()
+      upload()
+      // } else if (extName == ".mp4" || extName == ".mpeg" || extName == ".mov") {
+      //   price = 25
+      // } else {
+      //   price = 15
+      // }
+      console.log(typeof extName)
+      //CHECK SALDO 
     } catch (error) {
       res.status(404).json({
         message: "Upload Asset Failed" + error,
@@ -266,8 +297,12 @@ module.exports = {
       const snap = new midtransClient.Snap({
         // Set to true if you want Production Environment (accept real transaction).
         isProduction: false,
-        serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
-        clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
+        // admin.blockshared
+        serverKey: 'SB-Mid-server-KSXWcLPwZIqAesB0PV37-Oni',
+        clientKey: 'SB-Mid-client-VsNoelAk_nzIz3vl'
+        // adhitya-dev
+        // serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
+        // clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
       });
 
       let parameter = {
@@ -313,8 +348,13 @@ module.exports = {
       console.log(order_id)
       let apiClient = new midtransClient.Snap({
         isProduction: false,
-        serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
-        clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
+        isProduction: false,
+        // admin.blockshared
+        serverKey: 'SB-Mid-server-KSXWcLPwZIqAesB0PV37-Oni',
+        clientKey: 'SB-Mid-client-VsNoelAk_nzIz3vl'
+        // adhitya-dev
+        // serverKey: 'SB-Mid-server-axiEGcdKIEMchSpVzNS70xej',
+        // clientKey: 'SB-Mid-client-wQhJXae6UHHjo_O-'
       });
 
       apiClient.transaction.status(order_id)
@@ -339,10 +379,10 @@ module.exports = {
                 response,
                 id: req.user.id
               });
-            } else if (response.transaction_status == "settlement" && transactionDB.transaction_status != "null") {
+            } else if (response.transaction_status != "settlement" || transactionDB.transaction_status != "null") {
               transactionDB.transaction_status = response.transaction_status
               transactionDB.save()
-              console.log("BUKAN SETTLE")
+              console.log(response.transaction_status)
               console.log(response)
               //updateBall()
               res.status(200).json({
