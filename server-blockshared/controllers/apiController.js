@@ -143,6 +143,7 @@ module.exports = {
           const asset = await Asset.create(newAsset);
           cust.assetsId.push({ _id: asset._id });
           await cust.save();
+          res.header("Content-Type", "multipart/form-data");
           res.status(200).json({
             asset,
             message: "Upload Asset Success",
