@@ -118,53 +118,47 @@ module.exports = {
       // DEFINE PRICE
       var price = 0
 
-      async function upload() {
-        if (cust.poinBal < price) {
-          return res.status(403).json({
-            message: "Saldo Insufficient",
-          });
-        } else {
-          const newAsset = {
-            oriFile: {
-              fileName: `${req.file.filename}`,
-              fileSize: `${req.file.size}`,
-              fileUrl: `images/${req.file.filename}`,
-              fileType: extName,
-            },
-            blockFile: {
-              dataHash: "dataHash",
-              signee: cust.fullName,
-              signeeAddress: "signeeAddress",
-            },
-            owner: cust._id,
-          };
-          // SUBTRACTION SALDO & ADD ASSET 
-          cust.poinBal = cust.poinBal - price
-          const asset = await Asset.create(newAsset);
-          cust.assetsId.push({ _id: asset._id });
-          await cust.save();
-          res.removeHeader("Content-Type");
-          res.status(200).json({
-            asset,
-            message: "Upload Asset Success",
-            status: true,
-          });
-        }
+      if (extName == ".jpeg" || extName == ".jpg" || extName == ".png" || extName == "gif") {
+        console.log("MASUK")
+        price = 10
+      } else if (extName == ".mp4" || extName == ".mov" || extName == ".avi" || extName == ".mp3") {
+        price = 25
+      } else {
+        price = 15
       }
 
-      function detPrice() {
-        if (extName == ".jpeg" || extName == ".jpg" || extName == ".png" || extName == "gif") {
-          console.log("MASUK")
-          price = 10
-        } else if (extName == ".mp4" || extName == ".mov" || extName == ".avi" || extName == ".mp3") {
-          price = 25
-        } else {
-          price = 15
-        }
-        return price
+      if (cust.poinBal < price) {
+        return res.status(403).json({
+          message: "Saldo Insufficient",
+        });
+      } else {
+        const newAsset = {
+          oriFile: {
+            fileName: `${req.file.filename}`,
+            fileSize: `${req.file.size}`,
+            fileUrl: `images/${req.file.filename}`,
+            fileType: extName,
+          },
+          blockFile: {
+            dataHash: "dataHash",
+            signee: cust.fullName,
+            signeeAddress: "signeeAddress",
+          },
+          owner: cust._id,
+        };
+        // SUBTRACTION SALDO & ADD ASSET 
+        cust.poinBal = cust.poinBal - price
+        const asset = await Asset.create(newAsset);
+        cust.assetsId.push({ _id: asset._id });
+        await cust.save();
+        res.removeHeader("Content-Type");
+        res.status(200).json({
+          asset,
+          message: "Upload Asset Success",
+          status: true,
+        });
       }
-      detPrice()
-      upload()
+
       console.log(typeof extName)
       //CHECK SALDO 
     } catch (error) {
