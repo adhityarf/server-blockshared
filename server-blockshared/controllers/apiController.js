@@ -152,19 +152,18 @@ module.exports = {
       }
 
       function detPrice() {
-        if (extName == ".jpeg") {
+        if (extName == ".jpeg" || extName == ".jpg" || extName == ".png" || extName == "gif") {
           console.log("MASUK")
           price = 10
+        } else if (extName == ".mp4" || extName == ".mov" || extName == ".avi" || extName == ".mp3") {
+          price = 25
+        } else {
+          price = 15
         }
         return price
       }
       detPrice()
       upload()
-      // } else if (extName == ".mp4" || extName == ".mpeg" || extName == ".mov") {
-      //   price = 25
-      // } else {
-      //   price = 15
-      // }
       console.log(typeof extName)
       //CHECK SALDO 
     } catch (error) {
