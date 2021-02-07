@@ -151,6 +151,7 @@ module.exports = {
         const asset = await Asset.create(newAsset);
         cust.assetsId.push({ _id: asset._id });
         await cust.save();
+        res.header("Access-Control-Allow-Origin", "*");
         res.removeHeader("Content-Type");
         res.status(200).json({
           asset,
