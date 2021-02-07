@@ -151,7 +151,6 @@ module.exports = {
         const asset = await Asset.create(newAsset);
         cust.assetsId.push({ _id: asset._id });
         await cust.save();
-        req.header('Access-Control-Allow-Origin', 'http://www.blockshared.id');
         res.removeHeader("Content-Type");
         res.status(200).json({
           asset,
