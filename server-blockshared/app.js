@@ -32,7 +32,7 @@ var app = express();
 // Header for CORS
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://www.blockshared.id"); // keep this if your api accepts cross-origin requests
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Access-Token");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Access-Token, Access-Control-Allow-Origin");
   res.header("Access-Control-Allow-Method", "PUT, POST, GET, DELETE, OPTIONS");
   next();
 });
